@@ -34,29 +34,28 @@ void sendNTPpacket(IPAddress& address)
 
   // all NTP fields have been given values, now
   // you can send a packet requesting a timestamp:
-  udp.beginPacket(address, 123); //NTP requests are to port 123
+  udp.beginPacket(address, 123); //NTP requests TimeCorrectionare to port 123
   udp.write(packetBuffer, NTP_PACKET_SIZE);
   udp.endPacket();
 }
 
-int getTime(int a, int b, const char* c)
+int getTime(int Port, int TimeZone, const char* ServerName)
 {
+  const int secoffset = TimeZone * 3600;   // Timezone offset in seconds
   Serial.println("Starting UDP");
-  udp.begin(a);
+  udp.begin(Port);
   Serial.print("Local port: ");
   Serial.println(udp.localPort());
   
 
   //get a random server from the pool
-  WiFi.hostByName(c, timeServerIP); 
+  WiFi.hostByName(ServerName, timeServerIP); 
   
-  int cb;
-  int i = 0;
+  int cb, i = 0;
   // try getting Time from server for 10 times
   while (i < 10){  
     sendNTPpacket(timeServerIP); // send an NTP packet to a time server
-    // wait to see if a reply is available
-    delay(1000); 
+    delay(1000);  // wait to see if a reply is available
     int cb = udp.parsePacket();
     i++;
     if (i < 10){
@@ -97,11 +96,11 @@ int getTime(int a, int b, const char* c)
   // subtract seventy years:
   unsigned long epoch = secsSince1900 - seventyYears;
 
-  int currentTime = (epoch + b) % 86400L;   // in seconds
+  int currentTime = (epoch + secoffset) % 86400L;   // in seconds (and add TimeZone offset)
 
   // print the hour, minute and second:
   Serial.print("The GMT+1 time is ");       // UTC is the time at Greenwich Meridian (GMT)
-  Serial.print(((epoch + b) % 86400L) / 3600); // print the hour (86400 equals secs per day)(factor in Timezone)
+  Serial.print(((epoch + secoffset) % 86400L) / 3600); // print the hour (86400 equals secs per day)(factor in Timezone)
   Serial.print(":");
   if ( ((epoch % 3600) / 60) < 10 ) {
       // In the first 10 minutes of each hour, we'll want a leading '0'

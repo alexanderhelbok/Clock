@@ -2,4 +2,4 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-int getTime(int a, int b, const char* c);
+int getTime(int Port, int b, const char* ServerName);

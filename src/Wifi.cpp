@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include "Wifi.h" 
 
-void WifiConnect(const char *a,const char *b){
+void WifiConnect(const char *name, const char *password){
     // We start by connecting to a WiFi network
   Serial.print("Connecting to ");
-  Serial.println(a);
+  Serial.println(name);
   WiFi.hostname("Wemos");
-  WiFi.begin(a, b);
+  WiFi.begin(name, password);
   
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -15,6 +15,6 @@ void WifiConnect(const char *a,const char *b){
   Serial.println("");
   
   Serial.println("WiFi connected");
-  Serial.println("IP address: ");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 }
