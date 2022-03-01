@@ -113,6 +113,9 @@ int getTime(int Port, int TimeZone, const char* ServerName)
       Serial.print('0');
   }
   Serial.println(epoch % 60); // print the second
+  if (currentTime > 43200){
+    currentTime = currentTime - 43200;
+  } 
   return currentTime; 
 }
   

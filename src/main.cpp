@@ -24,12 +24,12 @@ const int UTCTimeoffset = 1;    // Timezone offset compared to UTC at Greenwich 
 #define Stepper_en 14   // enable
 
 // constants 
-const int CW = -1, CCW = 1;
+const int CW = 1, CCW = -1;
 const int Clock_direction = CW;   // Set direction: CW is clockwise, CCW ist anti clockwise 
 
 
 // Setup Stepperdriver ++++++++++++
-#define Stepper_Speed_Initial 2          // initial motor speed (when setting time)
+#define Stepper_Speed_Initial 17          // initial motor speed (when setting time)
 #define Stepper_Speed 0.25          // motor speed
 #define MICROSTEPS 16    // microsteps of the stepper driver
 #define MOTOR_STEPS (2038 / MICROSTEPS) // steps and gearing of steper motor
@@ -39,12 +39,12 @@ A4988 stepper(MOTOR_STEPS, Stepper_dir, Stepper_step);
 
 // Set the number of steps to move minute handle by one minute
 const unsigned long stepper_oneMin = 512; // measured in practice
-const unsigned long stepper_halfMin = 5120; //10 min 
+const unsigned long stepper_halfMin = 5124.0; //10 min 
 const unsigned long stepper_quarterMin = 2048; //4 min
 
-unsigned long moving_threshold = 15000;  // move minute handle every 15 seconds (15000 ms)
+// unsigned long moving_threshold = 15000;  // move minute handle every 15 seconds (15000 ms)
 
-unsigned long previousTime = 0;
+// unsigned long previousTime = 0;
 
 
 void setup() {
@@ -62,16 +62,17 @@ void setup() {
   // Get current Time from NTP Server and correct time
   int time = getTime(localPort, UTCTimeoffset, ntpServerName);
   Serial.println(time);
-  int now = TimeCorrection(stepper_oneMin/60, time, Stepper_Speed_Initial*4);
-  Serial.println(time);
+  int now = TimeCorrection(stepper_halfMin/600.0, time, 3.96*Stepper_Speed_Initial);
+  Serial.println(now);
 
-  // turn to desired time
-  if (now <= 43200){
+  // move to desired time  
+  if (time <= 21276){
     stepper.move(Clock_direction*now);
   }
-  else {
+  else{
     stepper.move(-Clock_direction*now);
   }
+  stepper.setRPM(Stepper_Speed);
 }
 
 
@@ -89,14 +90,14 @@ void incrementOneMinute() {
 
 
 void loop() {
-  stepper.setRPM(Stepper_Speed);
-  unsigned long currentTime = millis();
+  // unsigned long currentTime = millis();
+  stepper.move(Clock_direction*stepper_halfMin);
 
   // check if 15 seconds passed
-  if ((unsigned long)(currentTime - previousTime) >= moving_threshold) {
-    previousTime = currentTime;
-    incrementQuarterMinute(); // this takes some time
+  // if ((unsigned long)(currentTime - previousTime) >= moving_threshold) {
+  //   previousTime = currentTime;
+  //   incrementQuarterMinute(); // this takes some time
     // incrementHalfMinute();
     // incrementOneMinute();
-  }
+  // }
 }
