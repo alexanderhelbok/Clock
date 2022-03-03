@@ -1,10 +1,9 @@
 #include <Arduino.h>
 #include "A4988.h"
-// #include <Ticker.h>
 #include <Wire.h>
 #include "Wifi.h"
 #include "NTP.h"
-#include "Math.h"
+#include "Calc.h"
 
 
 // Setup Wifi and NTP Server +++++++++++++++++
