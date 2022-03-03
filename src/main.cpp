@@ -65,6 +65,9 @@ void setup() {
   int now = TimeCorrection(stepper_halfMin/600.0, time, 3.96*Stepper_Speed_Initial);
   Serial.println(now);
 
+  // Disconnect Wifi and enter modem sleep
+  WifiDisconnect();
+
   // move to desired time  
   if (time <= 21276){
     stepper.move(Clock_direction*now);
