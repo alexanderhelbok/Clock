@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Math.h"
+#include "Calc.h"
 
 int TimeCorrection(double offset, double time, double speed){
     double i, sum = 0;
