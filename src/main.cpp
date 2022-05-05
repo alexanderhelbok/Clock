@@ -42,7 +42,7 @@ const unsigned long stepper_oneMin = 4096.0; // measured in practice
 const unsigned long stepper_halfMin = 40965.0; //10 min 
 const unsigned long stepper_quarterMin = 2048; //4 min
 
-unsigned long moving_threshold = 60;  // move minute handle every 60 seconds 
+unsigned long moving_threshold = 60;  // time to sleep between moves (measured)
 
 unsigned long previousTime = 0, dreh, sleep;
 unsigned long currentTime = 0;
@@ -98,20 +98,22 @@ void incrementOneMinute() {
 }
 
 void loop() {
-  unsigned long currentTime = system_get_rtc_time();
-  Serial.print(currentTime);
-  Serial.print("\t");
-  
-  previousTime = currentTime;
+  // unsigned long currentTime = system_get_time();  
+  previousTime = system_get_time();
+  Serial.print(previousTime);
+  Serial.print(" + ");
+
   incrementOneMinute();
-  dreh = system_get_rtc_time() - previousTime;
-  // Serial.print(millis() - currentTime);
-  // Serial.print("\t");
+  dreh = system_get_time() - previousTime;
+  Serial.print(dreh);
+  Serial.print(" + ");
   // ESP.deepSleep(10e6);
   light_sleep(10);    
-  sleep = previousTime - system_get_rtc_time();
-  Serial.print(currentTime - system_get_rtc_time());
-  Serial.print("\t");
+  sleep = previousTime - dreh - system_get_time();
+  Serial.print(sleep);
+  Serial.print(" = ");
   // yield();
-  // Serial.println(currentTime - millis());
+  Serial.print(system_get_time());
+  Serial.print("\t");
+  Serial.println(previousTime - system_get_time());
 }
