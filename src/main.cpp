@@ -4,7 +4,7 @@
 #include "Wifi.h"
 #include "NTP.h"
 #include "Calc.h"
-#include "user_interface.h"
+#include "Sleep.h"
 
 
 // Setup Wifi and NTP Server +++++++++++++++++
@@ -24,8 +24,8 @@ const int UTCTimeoffset = 2;    // Timezone offset compared to UTC at Greenwich 
 #define Stepper_en 14   // enable
 
 // constants 
-const byte CW = -1, CCW = 1;
-const byte Clock_direction = CW;   // Set direction: CW is clockwise, CCW ist anti clockwise 
+const int CW = -1, CCW = 1;
+const int Clock_direction = CW;   // Set direction: CW is clockwise, CCW ist anti clockwise 
 
 
 // Setup Stepperdriver ++++++++++++
@@ -45,8 +45,10 @@ const unsigned long stepper_quarterMin = 2048; //4 min
 unsigned long moving_threshold = 60;  // move minute handle every 60 seconds 
 
 unsigned long previousTime = 0;
-// unsigned long currentTime = 0;
+unsigned long currentTime = 0;
 
+// void incrementHalfMinute();
+// void incrementOneMinute();
 
 void setup() {
   Serial.begin(115200);
@@ -70,15 +72,15 @@ void setup() {
   WifiDisconnect();
 
   // move to desired time  
-  // digitalWrite(Stepper_en, LOW);
-  // if (time <= 21276){
-  //   stepper.move(Clock_direction*now);
-  // }
-  // else{
-  //   stepper.move(-Clock_direction*now);
-  // }
+  digitalWrite(Stepper_en, LOW);
+  if (time <= 21276){
+    stepper.move(Clock_direction*now);
+  }
+  else{
+    stepper.move(-Clock_direction*now);
+  }
   stepper.setRPM(Stepper_Speed);
-  // digitalWrite(Stepper_en, HIGH);
+  digitalWrite(Stepper_en, HIGH);
   // previousTime = millis();
 }
 
@@ -88,48 +90,27 @@ void incrementQuarterMinute() {
 }
 
 void incrementHalfMinute() {
+  digitalWrite(Stepper_en, LOW);
   stepper.move(Clock_direction*stepper_halfMin);
+  digitalWrite(Stepper_en, HIGH);
 }
 
 void incrementOneMinute() {
   digitalWrite(Stepper_en, LOW);
-  stepper.move(Clock_direction*stepper_oneMin/60);
+  stepper.move(Clock_direction*stepper_oneMin);
   digitalWrite(Stepper_en, HIGH);
 }
 
-void fpm_wakup_cb_func(void) {
-  Serial.println("Light sleep is over, either because timeout or external interrupt");
-  Serial.flush();
-}
-
-void light_sleep(unsigned long timeout){
-  extern os_timer_t *timer_list;
-  timer_list = nullptr;
-
-  wifi_fpm_set_sleep_type(LIGHT_SLEEP_T);
-  wifi_fpm_open();
-  wifi_fpm_set_wakeup_cb(fpm_wakup_cb_func);
-  // light sleep function requires microseconds
-  wifi_fpm_do_sleep(timeout * 1e6);
-  delay(timeout + 1);
-}
-
-
 void loop() {
-  // unsigned long currentTime = millis();
-  // Serial.print(currentTime);
+  // currentTime = RTCmillis();
+  // Serial.println(RTCmillis() - previousTime);
+  // previousTime = currentTime;
+  incrementOneMinute();
+  // Serial.print(RTCmillis() - currentTime);
   // Serial.print("\t");
-  
-    // previousTime = currentTime;
-    // incrementQuarterMinute(); // this takes some time
-    // incrementHalfMinute();
-    incrementOneMinute();
-    // Serial.print(millis() - currentTime);
-    // Serial.print("\t");
-    // ESP.deepSleep(10e6);
-    light_sleep(10);    
-    // Serial.print(currentTime - millis());
-    // Serial.print("\t");
-    // yield();
-    // Serial.println(currentTime - millis());
+  // currentTime = RTCmillis();
+  light_sleep(66170);
+  // Serial.print(RTCmillis() - currentTime);
+  // Serial.print("\t");
+  // ESP.deepSleep(10e6);
 }
