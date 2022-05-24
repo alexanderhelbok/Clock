@@ -1,4 +1,6 @@
+#include <Arduino.h>
 #include "Wifi.h" 
+// #include <user_interface.h>
 
 void WifiConnect(const char *name, const char *password){
   WiFi.mode(WIFI_STA);

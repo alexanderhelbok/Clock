@@ -4,7 +4,7 @@
 #include "Wifi.h"
 #include "NTP.h"
 #include "Calc.h"
-#include "Sleep.h"
+#include "user_interface.h"
 
 
 // Setup Wifi and NTP Server +++++++++++++++++
@@ -42,10 +42,10 @@ const unsigned long stepper_oneMin = 4096.0; // measured in practice
 const unsigned long stepper_halfMin = 40965.0; //10 min 
 const unsigned long stepper_quarterMin = 2048; //4 min
 
-unsigned long moving_threshold = 60;  // time to sleep between moves (measured)
+unsigned long moving_threshold = 60;  // move minute handle every 60 seconds 
 
-unsigned long previousTime = 0, dreh, sleep;
-unsigned long currentTime = 0;
+unsigned long previousTime = 0;
+// unsigned long currentTime = 0;
 
 
 void setup() {
@@ -97,23 +97,39 @@ void incrementOneMinute() {
   digitalWrite(Stepper_en, HIGH);
 }
 
-void loop() {
-  // unsigned long currentTime = system_get_time();  
-  previousTime = system_get_time();
-  Serial.print(previousTime);
-  Serial.print(" + ");
+void fpm_wakup_cb_func(void) {
+  Serial.println("Light sleep is over, either because timeout or external interrupt");
+  Serial.flush();
+}
 
-  incrementOneMinute();
-  dreh = system_get_time() - previousTime;
-  Serial.print(dreh);
-  Serial.print(" + ");
-  // ESP.deepSleep(10e6);
-  light_sleep(10);    
-  sleep = previousTime - dreh - system_get_time();
-  Serial.print(sleep);
-  Serial.print(" = ");
-  // yield();
-  Serial.print(system_get_time());
-  Serial.print("\t");
-  Serial.println(previousTime - system_get_time());
+void light_sleep(unsigned long timeout){
+  extern os_timer_t *timer_list;
+  timer_list = nullptr;
+
+  wifi_fpm_set_sleep_type(LIGHT_SLEEP_T);
+  wifi_fpm_open();
+  wifi_fpm_set_wakeup_cb(fpm_wakup_cb_func);
+  // light sleep function requires microseconds
+  wifi_fpm_do_sleep(timeout * 1e6);
+  delay(timeout + 1);
+}
+
+
+void loop() {
+  // unsigned long currentTime = millis();
+  // Serial.print(currentTime);
+  // Serial.print("\t");
+  
+    // previousTime = currentTime;
+    // incrementQuarterMinute(); // this takes some time
+    // incrementHalfMinute();
+    incrementOneMinute();
+    // Serial.print(millis() - currentTime);
+    // Serial.print("\t");
+    // ESP.deepSleep(10e6);
+    light_sleep(10);    
+    // Serial.print(currentTime - millis());
+    // Serial.print("\t");
+    // yield();
+    // Serial.println(currentTime - millis());
 }
