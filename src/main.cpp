@@ -159,7 +159,15 @@ void loop() {
   // Serial.println(digitalRead(Hall_Hour_pin));
   // Serial.print("Hall Minute: ");
   // Serial.println(digitalRead(Hall_Minute_pin));
-  
+  if (!digitalRead(Hall_Minute_pin) && currentMinute != 0) {
+    int minuteDiff = currentMinute;
+    // Serial.print("Minute diff: ");
+    // Serial.println(minuteDiff);
+    if (minuteDiff > 30) {
+      minuteDiff = minuteDiff - 60; // if more than 30 minutes, go the other way
+    }
+    stepperMoveFast(stepper_oneMin * minuteDiff);
+  }
   if (!digitalRead(Hall_Hour_pin) && !digitalRead(Hall_Minute_pin)) {
     // compare time with NTP server
     WifiConnect(ssid, pass);
