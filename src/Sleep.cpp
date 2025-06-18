@@ -16,8 +16,3 @@ void light_sleep(unsigned long timeout){
   wifi_fpm_do_sleep(timeout * 1000);
   delay(timeout + 1);
 }
-
-uint32_t RTCmillis() {
-  // system_get_rtc_time() is in us (but very inaccurate anyway)
-  return (system_get_rtc_time() * (system_rtc_clock_cali_proc() >> 12)) / 1000;
-}
